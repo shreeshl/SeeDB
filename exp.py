@@ -20,12 +20,16 @@ def create_n_files(filename, no_files):
     for i in range(len(f)): 
         if i%data_each_file==0:
             try:
+                new_file.write(f[i])
                 new_file.close()
             except:
                 pass    
             if n==len(f) : return
-            new_file = open(new_filename+'_'+str(i/data_each_file)+'.txt', 'w')    
+            new_file = open(new_filename+'_'+str(int(i/data_each_file))+'.txt', 'w')    
+            continue
+        
         new_file.write(f[i])
+        if i!=len(f)-1 : new_file.write('\n')
     return
 
 #education_num, marital_status is out
@@ -95,8 +99,4 @@ for i in range(no_files):
         for v in measure[K:]:
             if v[1][0]<lowestLowerBound:
                 del tables[v[0]]
-    
-    
-
-
 
