@@ -1,4 +1,3 @@
-from __future__ import division
 from collections import defaultdict
 import math
 import psycopg2
@@ -13,6 +12,21 @@ def kl_divergence(p, q, normalizer_p, normalizer_q):
         deviation += pi*math.log(pi/qi)
     return deviation
 
+def create_n_files(filename, no_files):
+    f = open(filename).read().split('\n')
+    data_each_file = len(f)/no_files
+    new_filename = 'adult.data'
+    for i in range(len(f)): 
+        if i%data_each_file==0:
+            try:
+                new_file.close()
+            except:
+                pass    
+            if n==len(f) : return
+            new_file = open(new_filename+'_'+str(i/data_each_file)+'.txt', 'w')    
+        new_file.write(f[i])
+    return
+
 #education_num, marital_status is out
 grp_attr = ['age','workclass','fnlwgt','education','occupation','relationship','race',
 'sex','capital_gain','capital_loss','hours_per_week', 'native_country', 'salary']
@@ -26,8 +40,8 @@ cur = conn.cursor()
 tables = {}
 utility = defaultdict(float)
 N = len(f)
-bs = 0
-no_files = N/bs
+no_files = 10
+create_n_files('adult.data.txt', no_files)
 
 for i in range(no_files):
     M = i + 1
@@ -36,7 +50,7 @@ for i in range(no_files):
         cur.execute("DROP TABLE d;")
     
     cur.execute("""CREATE TABLE d (age INTEGER, workclass VARCHAR(200), fnlwgt INTEGER, education VARCHAR(200), education_num INTEGER, marital_status VARCHAR(30), occupation VARCHAR(50), relationship VARCHAR(50), race VARCHAR(50), sex VARCHAR(10), capital_gain INTEGER, capital_loss INTEGER, hours_per_week INTEGER, native_country VARCHAR(100), salary VARCHAR(50));""") #or update
-    data = 'adult.data_i.txt'%(i)
+    data = 'adult.data_' + str(i) + '.txt'
     file = open(data)
     cur.copy_from(file, 'd', sep=",")
     
