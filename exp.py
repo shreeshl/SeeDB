@@ -1,3 +1,4 @@
+from __future__ import division
 from collections import defaultdict
 import math
 import psycopg2
@@ -14,7 +15,7 @@ def kl_divergence(p, q, normalizer_p, normalizer_q):
 
 def create_n_files(filename, no_files):
     f = open(filename).read().split('\n')
-    data_each_file = len(f)/no_files
+    data_each_file = math.ceil(len(f)/no_files)
     new_filename = 'adult.data'
     for i in range(len(f)): 
         if i%data_each_file==0:
