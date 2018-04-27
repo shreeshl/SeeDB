@@ -30,7 +30,7 @@ def create_n_files(filename, no_files):
         
         new_file.write(f[i])
         if i!=len(f)-1 : new_file.write('\n')
-    return
+    return len(f)
 
 #education_num, marital_status is out
 grp_attr = ['age','workclass','fnlwgt','education','occupation','relationship','race',
@@ -44,9 +44,8 @@ conn = psycopg2.connect("host=localhost dbname=shreesh user=shreesh")
 cur = conn.cursor()
 tables = {}
 utility = defaultdict(float)
-N = len(f)
 no_files = 10
-create_n_files('adult.data.txt', no_files)
+N = create_n_files('adult.data.txt', no_files)
 
 for i in range(no_files):
     M = i + 1
@@ -98,5 +97,5 @@ for i in range(no_files):
         lowestLowerBound = measure[K-1][1][0]
         for v in measure[K:]:
             if v[1][0]<lowestLowerBound:
-                del tables[v[0]]
+                del tables[v[0]]    
 
