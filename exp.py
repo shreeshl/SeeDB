@@ -48,14 +48,24 @@ functions = ['avg', 'sum', 'min', 'max', 'count']
 measure_attr = ['age','capital_gain','capital_loss','hours_per_week']
 
 K = 5
-delta = 1e-3
+delta = 1e-5
 no_files = 10
 N = create_n_files('adult.data.txt', no_files)
 
 conn = psycopg2.connect("host=localhost dbname=shreesh user=shreesh")
 cur = conn.cursor()
+
+
 tables = {}
 utility = defaultdict(float)
+cur.execute("""SELECT EXISTS(
+    SELECT * 
+    FROM information_schema.tables 
+    WHERE 
+      table_name = 'd'
+);""")
+ans = cur.fetchall()
+if ans[0][0] : cur.execute("DROP TABLE d;")
 
 tic = time.time()
 for i in range(no_files):
