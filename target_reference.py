@@ -42,8 +42,10 @@ def create_n_files(filename, no_files):
     return len(f)
 
 #education_num, marital_status is out
-grp_attr = ['age','workclass','fnlwgt','education','occupation','relationship','race',
-'sex','capital_gain','capital_loss','hours_per_week', 'native_country', 'salary']
+# grp_attr = ['age','workclass','fnlwgt','education','occupation','relationship','race',
+# 'sex','capital_gain','capital_loss','hours_per_week', 'native_country', 'salary']
+grp_attr = ['workclass','education','occupation','relationship','race',
+'sex', 'native_country', 'salary']
 functions = ['avg', 'sum', 'min', 'max', 'count']
 measure_attr = ['age','capital_gain','capital_loss','hours_per_week']
 
@@ -92,11 +94,11 @@ for i in range(no_files):
                         when 'Married-spouse-absent' then 1
                         when 'Married-AF-spouse' then 1
                         ELSE 0
-                        END as g1, 1 AS g2 FROM d GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m), AsIs(a)))
+                        END as g1, 1 AS g2 FROM d WHERE %s not like '%?%' GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m),AsIs(a), AsIs(a)))
                     #Measure utility and update tables
                     view = cur.fetchall()
-                    p_dist = OrderedDict()
-                    q_dist = OrderedDict()
+                    p_dist = defaultdict(float)
+                    q_dist = defaultdict(float)
                     normalizer_p, normalizer_q  = 0.0, 0.0
                     for x in view:
                         if x[2]==1: #MARRIED
