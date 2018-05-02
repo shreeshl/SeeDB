@@ -15,7 +15,7 @@ class MyDict(defaultdict):
 
 def kl_divergence(p, q, normalizer_p, normalizer_q):
     deviation = 0.0
-    epsilon = 1e-3
+    epsilon = 1e-8
     if normalizer_p==0 and normalizer_q==0: return deviation
     all_keys = set(p.keys() + q.keys())
     if normalizer_p==0:normalizer_p = len(all_keys)*epsilon
@@ -52,10 +52,10 @@ def create_n_files(filename, no_files):
 grp_attr = ['workclass','education','occupation','relationship','race',
 'sex', 'native_country', 'salary']
 functions = ['avg', 'sum', 'min', 'max', 'count']
-measure_attr = ['age','capital_gain','capital_loss','hours_per_week']
+measure_attr = ['age','capital_gain','capital_loss','hours_per_week','fnlwgt']
 
 K = 5
-delta = 1e-3
+delta = 1e-5
 no_files = 10
 N = create_n_files('adult.data.txt', no_files)
 
