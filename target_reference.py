@@ -90,7 +90,7 @@ for i in range(no_files):
                         CASE marital_status
                         when 'Married-civ-spouse' then 1
                         when 'Married-spouse-absent' then 1
-                        when 'Married-civ-spouse' then 1
+                        when 'Married-AF-spouse' then 1
                         ELSE 0
                         END as g1, 1 AS g2 FROM d GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m), AsIs(a)))
                     #Measure utility and update tables
@@ -117,7 +117,7 @@ for i in range(no_files):
     measure = tables.items()  #measure[0] = ((a,f,m), (lower_bound, upper_bound))
     measure.sort(key=lambda tup: -1*tup[1][1])
     if len(measure)>K:
-        lowestLowerBound = float('inf')
+        lowestLowerBound = float('inf') 
         for i in measure[:K]:
             lowestLowerBound = min(lowestLowerBound,i[1][0])
         for v in measure[K:]:
@@ -141,7 +141,7 @@ for key in utility:
                     CASE marital_status
                     when 'Married-civ-spouse' then 1
                     when 'Married-spouse-absent' then 1
-                    when 'Married-civ-spouse' then 1
+                    when 'Married-AF-spouse' then 1
                     ELSE 0
                     END as g1, 1 AS g2 FROM d GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m), AsIs(a)))
     

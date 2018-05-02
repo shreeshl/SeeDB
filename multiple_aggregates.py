@@ -90,13 +90,13 @@ for i in range(no_files):
                         CASE marital_status
                         when 'Married-civ-spouse' then 1
                         when 'Married-spouse-absent' then 1
-                        when 'Married-civ-spouse' then 1
+                        when 'Married-AF-spouse' then 1
                         ELSE 0
                         END as g1, 1 AS g2 FROM d GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m), AsIs(a)))
                     #Measure utility and update tables
                     view = cur.fetchall()
-                    p_dist = OrderedDict()
-                    q_dist = OrderedDict()
+                    p_dist = defaultdict(float)
+                    q_dist = defaultdict(float)
                     normalizer_p, normalizer_q  = 0.0, 0.0
                     for x in view:
                         if x[2]==1: #MARRIED
@@ -137,11 +137,15 @@ file = open(data)
 cur.copy_from(file, 'd', sep=",")
 for key in utility:
     a,f,m = key
+    SELECT a, f1(m1), f1(m2), ... f1(mp), ...fk(m1),...,fk(mp)
+    FROM d 
+    WHERE marital_status='Married-civ-spouse' OR marital_status='Married-spouse-absent' OR marital_status='Married-AF-spouse'
+    GROUP BY a;
     cur.execute("""SELECT %s, %s(%s),
                     CASE marital_status
                     when 'Married-civ-spouse' then 1
                     when 'Married-spouse-absent' then 1
-                    when 'Married-civ-spouse' then 1
+                    when 'Married-AF-spouse' then 1
                     ELSE 0
                     END as g1, 1 AS g2 FROM d GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m), AsIs(a)))
     
@@ -153,12 +157,6 @@ for key in utility:
             data_stats[x[0]][0] = float(x[1])
         else:       #UNMARRIED
             data_stats[x[0]][1] = float(x[1])
-    # all_keys = set(married_stats.keys() + unmarried_stats.keys())
-    # for i in all_keys:
-    #     if i not in married_stats:
-    #         married_stats[i] = 0
-    #     if i not in unmarried_stats:
-    #         unmarried_stats[i] = 0
     
     objects = data_stats.keys()
     ind = np.arange(len(objects))
