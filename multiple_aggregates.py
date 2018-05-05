@@ -15,16 +15,14 @@ class MyDict(defaultdict):
 
 def kl_divergence(p, q, normalizer_p, normalizer_q):
     deviation = 0.0
-    epsilon = 1e-8
     if normalizer_p==0 and normalizer_q==0: return deviation
-    all_keys = set(p.keys() + q.keys())
-    if normalizer_p==0:normalizer_p = len(all_keys)*epsilon
-    if normalizer_q==0:normalizer_q = len(all_keys)*epsilon
+    
+    # all_keys = set(p.keys() + q.keys())
+    # if normalizer_p==0:normalizer_p = len(all_keys)*epsilon
+    # if normalizer_q==0:normalizer_q = len(all_keys)*epsilon
 
-    for k in all_keys:
-        if p[k]==0 : p[k] = epsilon
-        if q[k]==0 : q[k] = epsilon
-        
+    for k in p:
+        if p[k]==0 and q[k]==0: continue
         pi, qi = p[k]/normalizer_p, q[k]/normalizer_q
         deviation += pi*math.log(pi/qi)
     return deviation
@@ -73,7 +71,7 @@ cur.execute("""SELECT EXISTS(
 );""")
 ans = cur.fetchall()
 if ans[0][0] : cur.execute("DROP TABLE d;")
-
+epsilon = 1e-8
 
 tic = time.time()
 for i in range(no_files):
@@ -117,12 +115,29 @@ for i in range(no_files):
             
             for x in view:
                 if x[-2]==1: #MARRIED
-                    p_dist[x[0]] = float(x[idx+1])
-                    normalizer_p += float(x[idx+1])
+                    if float(x[idx+1])==0:
+                        p_dist[x[0]] = epsilon
+                        normalizer_p += epsilon
+                    else:
+                        p_dist[x[0]] = float(x[idx+1])
+                        normalizer_p += float(x[idx+1])
                 else:       #UNMARRIED
-                    q_dist[x[0]] = float(x[idx+1])
-                    normalizer_q += float(x[idx+1])
+                    if float(x[idx+1])==0:
+                        q_dist[x[0]] = epsilon
+                        normalizer_q += epsilon
+                    else:
+                        q_dist[x[0]] = float(x[idx+1])
+                        normalizer_q += float(x[idx+1])
+            
+            all_keys = set(p_dist.keys() + q_dist.keys())
+            for k in all_keys:
+                if k not in p_dist:
+                    p_dist[k] = epsilon
+                    normalizer_p+=epsilon
                 
+                if k not in q_dist:
+                    q_dist[k] = epsilon
+                    normalizer_q+=epsilon
             #Measure utility and update tables
             utility[a,f,m] += kl_divergence(p_dist, q_dist, normalizer_p, normalizer_q)
             if M==1: continue
