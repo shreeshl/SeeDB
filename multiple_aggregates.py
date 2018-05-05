@@ -211,7 +211,7 @@ for key in utility:
                     when 'Married-AF-spouse' then 1
                     when 'Separated' then 1
                     ELSE 0
-                    END as g1, 1 AS g2 FROM d GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m), AsIs(a)))
+                    END as g1, 1 AS g2 FROM d WHERE not %s='?' GROUP BY %s, g1, g2;""", (AsIs(a),AsIs(f),AsIs(m),AsIs(a), AsIs(a)))
     
     view = cur.fetchall()
     data_stats = MyDict()
@@ -222,8 +222,7 @@ for key in utility:
         else:       #UNMARRIED
             data_stats[x[0]][1] = float(x[1])
     
-    objects = data_stats.keys()
-    ind = np.arange(len(objects))
+    ind = np.arange(len(data_stats))
     values = np.array(data_stats.values())
     width = 0.35
     fig, ax = plt.subplots()
@@ -233,7 +232,7 @@ for key in utility:
     ax.set_ylabel('%s'%f)
     ax.set_title('%s of %s grouped by %s'%(f,m,a))
     ax.set_xticks(ind + width / 2)
-    ax.set_xticklabels(married_stats.keys(), rotation=20)
+    ax.set_xticklabels(data_stats.keys(), rotation=20)
 
     ax.legend((rects1[0], rects2[0]), ('Married', 'Unmarried'))
     plt.savefig("%s_%s_%s_%s.png"%(d,a,f,m))
