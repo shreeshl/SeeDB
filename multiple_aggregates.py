@@ -6,6 +6,7 @@ import time
 from psycopg2.extensions import AsIs
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import entropy, wasserstein_distance
 
 class MyDict(defaultdict):
     def __missing__(self, key):
@@ -22,10 +23,39 @@ def kl_divergence(p, q, normalizer_p, normalizer_q):
     # if normalizer_q==0:normalizer_q = len(all_keys)*epsilon
 
     for k in p:
-        if p[k]==0 and q[k]==0: continue
+        if p[k]==epsilon and q[k]==epsilon: continue
         pi, qi = p[k]/normalizer_p, q[k]/normalizer_q
         deviation += pi*math.log(pi/qi)
     return deviation
+
+def euclidean(p, q, normalizer_p, normalizer_q):
+    deviation = 0.0
+    if normalizer_p==0 and normalizer_q==0: return deviation
+    for k in p:
+        pi, qi = p[k]/normalizer_p, q[k]/normalizer_q
+        deviation += (pi-qi)**2
+    return math.sqrt(deviation)
+
+def js_divergence(p, q, normalizer_p, normalizer_q):
+    plist = []
+    qlist = []
+    mlist = []
+    for k in p:
+        pi, qi = p[k]/normalizer_p, q[k]/normalizer_q
+        plist.append(pi)
+        qlist.append(qi)
+        mlist.append((pi+qi)/2)
+    return (entropy(plist, mlist) + entropy(qlist, mlist)) / 2
+
+def emd_distance(p, q, normalizer_p, normalizer_q):
+    plist = []
+    qlist = []
+    for k in p:
+        pi, qi = p[k]/normalizer_p, q[k]/normalizer_q
+        plist.append(pi)
+        qlist.append(qi)
+    return wasserstein_distance(plist, qlist)
+
 
 def create_n_files(filename, no_files):
     f = open(filename).read().split('\n')
@@ -72,7 +102,7 @@ cur.execute("""SELECT EXISTS(
 ans = cur.fetchall()
 if ans[0][0] : cur.execute("DROP TABLE d;")
 epsilon = 1e-8
-
+d = 'emd'
 tic = time.time()
 for i in range(no_files):
     M = i + 1
@@ -139,7 +169,11 @@ for i in range(no_files):
                     q_dist[k] = epsilon
                     normalizer_q+=epsilon
             #Measure utility and update tables
-            utility[a,f,m] += kl_divergence(p_dist, q_dist, normalizer_p, normalizer_q)
+            # utility[a,f,m] += kl_divergence(p_dist, q_dist, normalizer_p, normalizer_q)
+            # utility[a,f,m] += kl_divergence(q_dist, p_dist, normalizer_q, normalizer_p)
+            # utility[a,f,m] += euclidean(q_dist, p_dist, normalizer_q, normalizer_p)
+            # utility[a,f,m] += js_divergence(q_dist, p_dist, normalizer_q, normalizer_p)
+            utility[a,f,m] += emd_distance(q_dist, p_dist, normalizer_q, normalizer_p)
             if M==1: continue
             epsilon_m = math.sqrt(  (1-(M-1)/N) * (2*math.log(math.log(M)) + math.log(math.pi**2/(3*delta)))/(2*M) )
             lower_bound = utility[a,f,m]/M - epsilon_m 
@@ -202,5 +236,5 @@ for key in utility:
     ax.set_xticklabels(married_stats.keys(), rotation=20)
 
     ax.legend((rects1[0], rects2[0]), ('Married', 'Unmarried'))
-    plt.savefig("%s_%s_%s.png"%(a,f,m))
-    
+    plt.savefig("%s_%s_%s_%s.png"%(d,a,f,m))
+    # plt.close()
