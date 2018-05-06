@@ -102,7 +102,7 @@ cur.execute("""SELECT EXISTS(
 ans = cur.fetchall()
 if ans[0][0] : cur.execute("DROP TABLE d;")
 epsilon = 1e-8
-d = 'emd'
+d = 'kl_qp'
 tic = time.time()
 for i in range(no_files):
     M = i + 1
@@ -170,10 +170,10 @@ for i in range(no_files):
                     normalizer_q+=epsilon
             #Measure utility and update tables
             # utility[a,f,m] += kl_divergence(p_dist, q_dist, normalizer_p, normalizer_q)
-            # utility[a,f,m] += kl_divergence(q_dist, p_dist, normalizer_q, normalizer_p)
+            utility[a,f,m] += kl_divergence(q_dist, p_dist, normalizer_q, normalizer_p)
             # utility[a,f,m] += euclidean(q_dist, p_dist, normalizer_q, normalizer_p)
             # utility[a,f,m] += js_divergence(q_dist, p_dist, normalizer_q, normalizer_p)
-            utility[a,f,m] += emd_distance(q_dist, p_dist, normalizer_q, normalizer_p)
+            # utility[a,f,m] += emd_distance(q_dist, p_dist, normalizer_q, normalizer_p)
             if M==1: continue
             epsilon_m = math.sqrt(  (1-(M-1)/N) * (2*math.log(math.log(M)) + math.log(math.pi**2/(3*delta)))/(2*M) )
             lower_bound = utility[a,f,m]/M - epsilon_m 
@@ -232,7 +232,7 @@ for key in utility:
     ax.set_ylabel('%s'%f)
     ax.set_title('%s of %s grouped by %s'%(f,m,a))
     ax.set_xticks(ind + width / 2)
-    ax.set_xticklabels(data_stats.keys(), rotation=20)
+    ax.set_xticklabels(data_stats.keys(), rotation=90)
 
     ax.legend((rects1[0], rects2[0]), ('Married', 'Unmarried'))
     plt.savefig("%s_%s_%s_%s.png"%(d,a,f,m))
